@@ -10,6 +10,7 @@ def twoSum(nums, target):
         numbers_we_need[target - nums[i]] = i
     return False
 
+
 # Problem 2:
 # given two non-empty linked lists, representing two non negative integers (stored in reverse order) e.g. 4->5->6 =
 # 654. Add the two numbers and return it in the form of a linked list (also in reverse order)
@@ -157,3 +158,19 @@ def addTwoLinkedLists(l1, l2):
 
 # Problem 3:
 # Longest substring without repeating characters
+def longestSubstring(s):
+    char_dict = {}
+    j = 0
+    longest = 0
+    for i in range(len(s)):
+        if s[i] in char_dict:
+            j = max(j, char_dict[s[i]] + 1)
+        char_dict[s[i]] = i
+        longest = max(longest, i - j + 1)
+    return longest
+
+# Problem 4: Hard: skipping hard problems
+# Problem 5
+def foo():
+    pass
+
