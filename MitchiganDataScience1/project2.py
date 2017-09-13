@@ -102,18 +102,114 @@ def answer_five():
 
 def answer_six():
     '''What country has the maximum % Renewable and what is the percentage?'''
-    pass
+    return (merged_df['% Renewable'].idxmax(), merged_df['% Renewable'].max())
+
+
+def answer_seven():
+    '''Create column that is ratio of Self-Citation to Total Citations.
+    What is the maximum value for this new column, and what country has the 
+    highest ratio?'''
+    merged_df['Self-to-Total'] = merged_df['Self-citations'] / merged_df['Citations']
+    return (merged_df['Self-to-Total'].idxmax(), merged_df['Self-to-Total'].max())
+
+
+def answer_eight():
+    '''Create a column that estimates the population using Energy Supply and
+    Energy Supply per capita. What is the most populous country according to 
+    this estimate?'''
+    merged_df['PopEst'] = merged_df['Energy Supply'] / merged_df['Energy Supply per Capita']
+    return merged_df['PopEst'].sort_values(axis=0, ascending=False).index[2]
+
+
+def answer_nine():
+    '''Create a column that estimates the number of citable documents per person.
+    What is the correlation between the number of citable documents per capita
+    and the energy supply per capita? Use the .corr() method, (Pearson's corr).'''
+    merged_df['PopEst'] = merged_df['Energy Supply'] / merged_df['Energy Supply per Capita']
+    merged_df['Citable docs per Capita'] = merged_df['Citable documents'] / merged_df['PopEst']
+    return merged_df['PopEst'].corr(merged_df['Citable docs per Capita'])
+
+
+def answer_ten():
+    '''Create a new column with a 1 if the country's % Renewable value is at or
+    above the median for all contries in the top 15, and 0 if below median.'''
+    median_renew = merged_df['% Renewable'].median()
+    merged_df['HighRenew'] = np.where(merged_df['% Renewable'] >= median_renew, 1, 0)
+    sort = merged_df[['Rank','HighRenew']].sort_values(by='Rank', ascending=False)
+    return sort['HighRenew']
+
+
+def answer_eleven():
+    '''Use the following dictionary to group the Countries by Continent, then
+    create a dataframe that displays the sample size (the number of countries
+    in each continent bin), and the sum, mean, and std deviation for the 
+    estimated population of each country.'''
+    ContinentDict = {'China': 'Asia',
+                     'United States': 'North America',
+                     'Japan': 'Asia',
+                     'United Kingdom': 'Europe',
+                     'Russian Federation': 'Europe',
+                     'Canada': 'North America',
+                     'Germany': 'Europe',
+                     'India': 'Asia',
+                     'France': 'Europe',
+                     'South Korea': 'Asia',
+                     'Italy': 'Europe',
+                     'Spain': 'Europe',
+                     'Iran': 'Asia',
+                     'Australia': 'Australia',
+                     'Brazil': 'South America'}
+            
+    merged_df['PopEst'] = merged_df['Energy Supply'] / merged_df['Energy Supply per Capita']
+    merged_df['Country'] = merged_df.index
+    merged_df['Continent'] = merged_df['Country'].map(ContinentDict)
+    new_df = merged_df.set_index('Continent')
+    new_df['Continent'] = new_df.index
+
+    new_df['size'] = new_df['PopEst'].groupby(new_df['Continent']).transform('count')
+    new_df['sum'] = new_df['PopEst'].groupby(new_df['Continent']).transform('sum')
+    new_df['mean'] = new_df['PopEst'].groupby(new_df['Continent']).transform('mean')
+    new_df['std'] = new_df['PopEst'].groupby(new_df['Continent']).transform('std')
+ 
+    return new_df[['size','sum','mean','std']].drop_duplicates()
+    
+
+def answer_twelve():
+    '''Cut % Renewable into 5 bins. Group top 15 by the Continent, as well as
+    these new % Renewable bins. How many countries are in each of these groups?
+    '''
+    ContinentDict = {'China': 'Asia',
+                     'United States': 'North America',
+                     'Japan': 'Asia',
+                     'United Kingdom': 'Europe',
+                     'Russian Federation': 'Europe',
+                     'Canada': 'North America',
+                     'Germany': 'Europe',
+                     'India': 'Asia',
+                     'France': 'Europe',
+                     'South Korea': 'Asia',
+                     'Italy': 'Europe',
+                     'Spain': 'Europe',
+                     'Iran': 'Asia',
+                     'Australia': 'Australia',
+                     'Brazil': 'South America'}
+            
+    merged_df['PopEst'] = merged_df['Energy Supply'] / merged_df['Energy Supply per Capita']
+    merged_df['Country'] = merged_df.index
+    merged_df['Continent'] = merged_df['Country'].map(ContinentDict)
+    new_df = merged_df.set_index('Continent')
+    new_df['Continent'] = new_df.index
+
+    cutted = pd.cut(merged_df['% Renewable'], bins=5)
+
+    return merged_df.groupby('Country')['Continent',cutted]
 
 
 
 
 
 
-print(answer_five())
 
 
-
-
-
-
+print(answer_twelve())
 
