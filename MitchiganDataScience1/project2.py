@@ -72,5 +72,48 @@ merged_df = merged_df[['Rank', 'Documents', 'Citable documents', 'Citations', 'S
                        'H index', 'Energy Supply', 'Energy Supply per Capita', '% Renewable', '2006', '2007', '2008',
                        '2009', '2010', '2011', '2012', '2013', '2014', '2015']]
 
-# Question 2
+
+def answer_two():
+    '''How many entries did you lose when you merged the data frames together? (before you reduced the sample
+    further to 15)'''
+    total_records = len(energy) + len(GDP) + len(ScimEn)
+    surviving_records = len(energy.merge(GDP, how='inner', left_index=True, right_index=True).merge(
+        ScimEn, how='inner', left_index=True, right_index=True))
+    return total_records - surviving_records
+
+
+def answer_three():
+    '''What is the avarage GDP over the last 10 years for each country in the top 15 countries?'''
+    GDP_subset = ['2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015']
+    merged_df['avgGDP'] = merged_df[GDP_subset].mean(axis=1, skipna=True)
+    return merged_df['avgGDP'].sort_values(ascending=False)
+
+
+def answer_four():
+    '''By how much did the GDP change over the 10 years span for the country with 6th largest avg GDP?'''
+    sixth_gdp = answer_three().index[5]
+    return merged_df.loc[sixth_gdp]['2015'] - merged_df.loc[sixth_gdp]['2006']
+
+
+def answer_five():
+    '''What is the mean Energy Supply per Capita?'''
+    return merged_df['Energy Supply per Capita'].mean(axis=0)
+
+
+def answer_six():
+    '''What country has the maximum % Renewable and what is the percentage?'''
+    pass
+
+
+
+
+
+
+print(answer_five())
+
+
+
+
+
+
 
