@@ -193,23 +193,32 @@ def answer_twelve():
                      'Iran': 'Asia',
                      'Australia': 'Australia',
                      'Brazil': 'South America'}
-            
-    merged_df['PopEst'] = merged_df['Energy Supply'] / merged_df['Energy Supply per Capita']
+
     merged_df['Country'] = merged_df.index
     merged_df['Continent'] = merged_df['Country'].map(ContinentDict)
-    new_df = merged_df.set_index('Continent')
-    new_df['Continent'] = new_df.index
 
-    cutted = pd.cut(merged_df['% Renewable'], bins=5)
+    tags = ['Bottom 20%', 'Top 80%', 'Top 60%', 'Top 40%', 'Top 20%']
+    merged_df['bins for Renewable'] = pd.cut(merged_df['% Renewable'], bins=5, labels=tags)
 
-    return merged_df.groupby('Country')['Continent',cutted]
+    pvtdf = pd.pivot_table(merged_df, index=['Continent','bins for Renewable'], 
+                           values='Country', aggfunc='count')
+
+    pvtdf.rename(columns={'Country':'# of Countries'}, inplace=True)
+    pvtdf = pvtdf.dropna()
+    
+    return pvtdf.squeeze()
 
 
+def answer_thirteen():
+    '''Convert the population Estimate sereies to a string with thousands
+    seperator (using commas). Do not round the results.'''
+    merged_df['PopEst-pre'] = merged_df['Energy Supply'] / merged_df['Energy Supply per Capita']
+    
+    new_df = pd.DataFrame(merged_df['PopEst-pre'])
+    new_df['formatted'] = new_df['PopEst-pre'].map('{:,.8f}'.format)
+    new_df['PopEst'] = new_df[str('formatted')]
+
+    return pd.Series(new_df['PopEst'])
 
 
-
-
-
-
-print(answer_twelve())
-
+# end
