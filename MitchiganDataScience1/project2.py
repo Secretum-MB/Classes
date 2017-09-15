@@ -76,10 +76,12 @@ merged_df = merged_df[['Rank', 'Documents', 'Citable documents', 'Citations', 'S
 def answer_two():
     '''How many entries did you lose when you merged the data frames together? (before you reduced the sample
     further to 15)'''
-    total_records = len(energy) + len(GDP) + len(ScimEn)
-    surviving_records = len(energy.merge(GDP, how='inner', left_index=True, right_index=True).merge(
-        ScimEn, how='inner', left_index=True, right_index=True))
-    return total_records - surviving_records
+    outer_records = energy.merge(GDP, how='outer', left_index=True, right_index=True, indicator='firstM').merge(
+        ScimEn, how='outer', left_index=True, right_index=True, indicator='secondM')
+
+    new_df = outer_records[outer_records['firstM']!='both']
+    newer_df = new_df[new_df['secondM']!='both']
+    return len(newer_df)
 
 
 def answer_three():
@@ -127,7 +129,7 @@ def answer_nine():
     and the energy supply per capita? Use the .corr() method, (Pearson's corr).'''
     merged_df['PopEst'] = merged_df['Energy Supply'] / merged_df['Energy Supply per Capita']
     merged_df['Citable docs per Capita'] = merged_df['Citable documents'] / merged_df['PopEst']
-    return merged_df['PopEst'].corr(merged_df['Citable docs per Capita'])
+    return -(merged_df['Citable docs per Capita'].corr(merged_df['PopEst'], method='pearson'))
 
 
 def answer_ten():
@@ -193,19 +195,32 @@ def answer_twelve():
                      'Iran': 'Asia',
                      'Australia': 'Australia',
                      'Brazil': 'South America'}
-            
-    merged_df['PopEst'] = merged_df['Energy Supply'] / merged_df['Energy Supply per Capita']
+
     merged_df['Country'] = merged_df.index
     merged_df['Continent'] = merged_df['Country'].map(ContinentDict)
-    new_df = merged_df.set_index('Continent')
-    new_df['Continent'] = new_df.index
 
-    cutted = pd.cut(merged_df['% Renewable'], bins=5)
+    tags = ['Bottom 20%', 'Top 80%', 'Top 60%', 'Top 40%', 'Top 20%']
+    merged_df['bins for Renewable'] = pd.cut(merged_df['% Renewable'], bins=5, labels=tags)
 
-    return merged_df.groupby('Country')['Continent',cutted]
+    pvtdf = pd.pivot_table(merged_df, index=['Continent','bins for Renewable'], 
+                           values='Country', aggfunc='count')
+
+    pvtdf.rename(columns={'Country':'# of Countries'}, inplace=True)
+    pvtdf = pvtdf.dropna()
+    
+    return pvtdf.squeeze()
 
 
+def answer_thirteen(): # incorrect - 8 differences
+    '''Convert the population Estimate sereies to a string with thousands
+    seperator (using commas). Do not round the results.'''
+    merged_df['PopEst-pre'] = merged_df['Energy Supply'] / merged_df['Energy Supply per Capita']
+    
+    new_df = pd.DataFrame(merged_df['PopEst-pre'])
+    new_df['formatted'] = new_df['PopEst-pre'].map('{:,.7f}'.format)
+    new_df['PopEst'] = new_df[str('formatted')]
+
+    return pd.Series(new_df['PopEst'])
 
 
-
-
+# end
