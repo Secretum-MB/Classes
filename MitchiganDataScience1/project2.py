@@ -76,12 +76,11 @@ merged_df = merged_df[['Rank', 'Documents', 'Citable documents', 'Citations', 'S
 def answer_two():
     '''How many entries did you lose when you merged the data frames together? (before you reduced the sample
     further to 15)'''
-    outer_records = energy.merge(GDP, how='outer', left_index=True, right_index=True, indicator='firstM').merge(
-        ScimEn, how='outer', left_index=True, right_index=True, indicator='secondM')
-
-    new_df = outer_records[outer_records['firstM']!='both']
-    newer_df = new_df[new_df['secondM']!='both']
-    return len(newer_df)
+    outer_records = energy.merge(GDP, how='outer', left_index=True, right_index=True).merge(
+        ScimEn, how='outer', left_index=True, right_index=True)
+    inner_records = energy.merge(GDP, how='inner', left_index=True, right_index=True).merge(
+        ScimEn, how='inner', left_index=True, right_index=True)
+    return len(outer_records) - len(inner_records)
 
 
 def answer_three():
@@ -129,7 +128,7 @@ def answer_nine():
     and the energy supply per capita? Use the .corr() method, (Pearson's corr).'''
     merged_df['PopEst'] = merged_df['Energy Supply'] / merged_df['Energy Supply per Capita']
     merged_df['Citable docs per Capita'] = merged_df['Citable documents'] / merged_df['PopEst']
-    return -(merged_df['Citable docs per Capita'].corr(merged_df['PopEst'], method='pearson'))
+    return merged_df['Citable docs per Capita'].corr(merged_df['Energy Supply per Capita'], method='pearson')
 
 
 def answer_ten():
@@ -217,9 +216,8 @@ def answer_thirteen(): # incorrect - 8 differences
     merged_df['PopEst-pre'] = merged_df['Energy Supply'] / merged_df['Energy Supply per Capita']
     
     new_df = pd.DataFrame(merged_df['PopEst-pre'])
-    new_df['formatted'] = new_df['PopEst-pre'].map('{:,.7f}'.format)
+    new_df['formatted'] = new_df['PopEst-pre'].map('{:,.8f}'.format)
     new_df['PopEst'] = new_df[str('formatted')]
-
     return pd.Series(new_df['PopEst'])
 
 
