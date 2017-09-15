@@ -209,7 +209,3 @@ def answer_twelve():
 
 
 
-
-
-print(answer_twelve())
-
