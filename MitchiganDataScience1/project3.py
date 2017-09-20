@@ -7,6 +7,7 @@ Created on Sat Sep 16 17:27:48 2017
 
 import numpy as np
 import pandas as pd
+from scipy.stats import ttest_ind
 
 
 # Use this dictionary to map state names to two letter acronyms
@@ -100,7 +101,7 @@ def get_recession_bottom():
 
 
 def convert_housing_data_to_quarters():
-    '''Converts the housing data to quarters and returns it as mean
+    """Converts the housing data to quarters and returns it as mean
        values in a dataframe. This dataframe should be a dataframe with
        columns for 2000q1 through 2016q3, and should have a multi-index
        in the shape of ["State","RegionName"].
@@ -109,12 +110,63 @@ def convert_housing_data_to_quarters():
        not arbitrary three month periods.
 
        The resulting dataframe should have 67 columns, and 10,730 rows.
-    '''
-    pass
+    """
+    df = pd.read_csv('City_Zhvi_allHomes.csv', index_col=['State','RegionName'])
+    df = df.iloc[:, 49:-10]
+
+    for column in df.columns.get_values():
+        if column[-2:] == '03':
+            year = column[:4]
+            df[year + 'q1'] = (df[year + '-01'] + df[year + '-02'] + df[year + '-03']) / 3
+
+        if column[-2:] == '06':
+            year = column[:4]
+            df[year + 'q2'] = (df[year + '-04'] + df[year + '-05'] + df[year + '-06']) / 3
+
+        if column[-2:] == '09':
+            year = column[:4]
+            df[year + 'q3'] = (df[year + '-07'] + df[year + '-08'] + df[year + '-09']) / 3
+
+        if column[-2:] == '12':
+            year = column[:4]
+            df[year + 'q4'] = (df[year + '-10'] + df[year + '-11'] + df[year + '-12']) / 3
+
+    df = df.iloc[:, 201:]
+    return df
+
+
+def run_ttest():
+    '''First creates new data showing the decline or growth of housing prices between
+    the recession start and the recession bottom. Then runs a ttest comparing the
+    university town values to the non-university towns values, return whether the
+    alternative hypothesis (that the two groups are the same) is true or not as well
+    as the p-value of the confidence.
+
+    Return the tuple (different, p, better) where different=True if the t-test is
+    True at the p<0.01 (we refect the null hypotheis), or different=False if otherwise
+    (we cannot reject the null hypothesis). The variable p should be equal to the exact
+    p value returned from the scipy.stats.ttest_ind().  The value for better should be
+    either "university town" or "non-university town" depending on which has the lower
+    mean price ratio (which is equivelant to a reduced market loss).'''
+
+    # the lower the ratio the less you have lost. values less than 1 indicates gain.
+    # price ratio = quarter_before_recession / recession_bottom
+    df = convert_housing_data_to_quarters()
+    df['PriceRatio'] = df[get_recession_start()] / df[get_recession_bottom()]
+
+    university_towns = get_list_of_university_towns()
+    university_regions = list(university_towns['RegionName'])
+
+    df['RegionName'] = df.index
+    df['UniversityTown'] = np.where(df['RegionName'][1] in university_regions, True, False)
+
+
+    return df
+    #return df[df['UniversityTown']==True]
 
 
 
 
+print(run_ttest())
+#get_list_of_university_towns().to_csv('temporary.csv')
 
-
-print(convert_housing_data_to_quarters())
