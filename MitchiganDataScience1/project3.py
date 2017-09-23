@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """
 Created on Sat Sep 16 17:27:48 2017
 
@@ -8,6 +6,7 @@ Created on Sat Sep 16 17:27:48 2017
 import numpy as np
 import pandas as pd
 from scipy.stats import ttest_ind
+import re
 
 
 # Use this dictionary to map state names to two letter acronyms
@@ -47,7 +46,7 @@ def get_recession_start():
     recessions = []
     for row in range(2, len(series)):
         if series[row] < series[row - 1] and series[row - 1] < series[row - 2]:
-            recessions.append(series.index[row])
+            recessions.append(series.index[row - 1])
 
     return recessions[0]
 
@@ -111,27 +110,30 @@ def convert_housing_data_to_quarters():
 
        The resulting dataframe should have 67 columns, and 10,730 rows.
     """
-    df = pd.read_csv('City_Zhvi_allHomes.csv', index_col=['State','RegionName'])
-    df = df.iloc[:, 49:-10]
+    df = pd.read_csv('City_Zhvi_AllHomes.csv', index_col=['SizeRank'])
+    df['State'] = df['State'].map(states)
+    df.set_index(['State','RegionName'], inplace=True)
+
+    df = df.loc[:,'2000-01':'2016-09']
 
     for column in df.columns.get_values():
         if column[-2:] == '03':
             year = column[:4]
-            df[year + 'q1'] = (df[year + '-01'] + df[year + '-02'] + df[year + '-03']) / 3
+            df[year + 'q1'] = (df[year + '-01'] + df[year + '-02'] + df[year + '-03']).div(3)
 
         if column[-2:] == '06':
             year = column[:4]
-            df[year + 'q2'] = (df[year + '-04'] + df[year + '-05'] + df[year + '-06']) / 3
+            df[year + 'q2'] = (df[year + '-04'] + df[year + '-05'] + df[year + '-06']).div(3)
 
         if column[-2:] == '09':
             year = column[:4]
-            df[year + 'q3'] = (df[year + '-07'] + df[year + '-08'] + df[year + '-09']) / 3
+            df[year + 'q3'] = (df[year + '-07'] + df[year + '-08'] + df[year + '-09']).div(3)
 
         if column[-2:] == '12':
             year = column[:4]
-            df[year + 'q4'] = (df[year + '-10'] + df[year + '-11'] + df[year + '-12']) / 3
+            df[year + 'q4'] = (df[year + '-10'] + df[year + '-11'] + df[year + '-12']).div(3)
 
-    df = df.iloc[:, 201:]
+    df = df.loc[:,'2000q1':'2016q3']
     return df
 
 
@@ -157,16 +159,20 @@ def run_ttest():
     university_towns = get_list_of_university_towns()
     university_regions = list(university_towns['RegionName'])
 
-    df['RegionName'] = df.index
-    df['UniversityTown'] = np.where(df['RegionName'][1] in university_regions, True, False)
+#    df['RegionName'] = df.index
+#    df['UniversityTown'] = np.where(df['RegionName'][1] in university_regions, True, False)
 
 
     return df
     #return df[df['UniversityTown']==True]
 
 
+a = 'math a '
+a = a.replace('[','(').split('(')[0].strip()
+print(len(a))
 
 
-print(run_ttest())
-#get_list_of_university_towns().to_csv('temporary.csv')
+
+
+
 
