@@ -5,6 +5,7 @@ Created on Sat Sep 16 17:27:48 2017
 
 import numpy as np
 import pandas as pd
+from scipy.stats import ttest_ind
 
 
 # Use this dictionary to map state names to two letter acronyms
@@ -161,11 +162,18 @@ def run_ttest():
 
     df['UniversityTown'] = np.where(df['RegionName'].isin(university_towns), 'YES', 'NO')
 
+    df_uni = df[df['UniversityTown']=='YES']
+    df_non_uni = df[df['UniversityTown']=='NO']
 
-    return university_towns
+    t_test = ttest_ind(df_uni['PriceRatio'], df_non_uni['PriceRatio'], nan_policy='omit')
+
+    if t_test[0] < 0:   better = 'university town'
+    else:   better = 'non-university town'
+
+    if t_test[1] < 0.01:    different = True
+    else:   different = False
+
+    return (different, t_test[1], better)
 
 
-
-print(run_ttest())
-
-
+# end
