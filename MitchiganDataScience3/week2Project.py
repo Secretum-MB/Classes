@@ -74,10 +74,44 @@ def answer_two():
 
 
 def answer_three():
-    pass
-    
+    # returning degree that is underfitting, overfitting, good fit
+    return (0, 9, 7)
 
     
+def answer_four():
+    from sklearn.preprocessing import PolynomialFeatures
+    from sklearn.linear_model import Lasso, LinearRegression
+    from sklearn.metrics.regression import r2_score
     
+    # create a polynomial feature object
+    poly = PolynomialFeatures(degree=12)
+
+    # reshape x_train and convert it to polynomial feature
+    x_train_poly = poly.fit_transform(X_train.reshape((11,1)))
+
+    # define and fit linear regression model
+    linreg = LinearRegression().fit(x_train_poly, y_train)
     
+    # create predictions for testing data
+    x_test_poly = poly.transform(X_test.reshape((4,1)))
+    y_predict_test = linreg.predict(x_test_poly)
     
+    # score of lr
+    lr_score = r2_score(y_test, y_predict_test)
+
+    #define and fit lasso regression model
+    linlasso = Lasso(0.01, max_iter = 10000).fit(x_train_poly, y_train)
+    
+    # create predictions for test data
+    y_predict_test = linlasso.predict(x_test_poly)
+    
+    # score of lasso lr
+    lasso_score = r2_score(y_test, y_predict_test)
+    
+    return (lr_score, lasso_score)
+
+
+def answer_five():
+    pass
+
+
