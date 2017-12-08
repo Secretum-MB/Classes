@@ -127,8 +127,9 @@ y_mush = mush_df2.iloc[:, 1]
 # split dataset into training and testing
 X_train2, X_test2, y_train2, y_test2 = train_test_split(X_mush, y_mush, random_state=0)
 
-#X_subset = X_test2
-#y_subset = y_test2
+# this creates a subset of the data that will be used in Q 6 and 7 (for time reasons)
+X_subset = X_test2
+y_subset = y_test2
 
 
 def answer_five():
@@ -147,8 +148,36 @@ def answer_five():
 
 
 def answer_six():
-    pass
+    # explore classifier average accuracy across 6 different gammas using a
+    # validation curve that creates 3 models per gamma.
+    from sklearn.svm import SVC
+    from sklearn.model_selection import validation_curve
+
+    # creating a Support vector Classifier
+    svc = SVC(kernel='rbf', C=1.0, random_state=0)
+
+    # calculate model scores of support vector using validation curve, varying gamma
+    train, test = validation_curve(svc, X_subset, y_subset, 'gamma',
+                                   np.logspace(-4,1,6), scoring='accuracy')
+    training_scores = []
+    testing_scores = []
+    for gamma_run in train:
+        training_scores.append(np.mean(gamma_run))
+
+    for gamma_run in test:
+        testing_scores.append(np.mean(gamma_run))
+
+    return (training_scores, testing_scores)
 
 
+def answer_seven():
+    # return from above the gamma values in that map as following:
+    # (underfitting, overfitting, good_generalization)
+    all_gammas = np.logspace(-4,1,6)
+
+    # From reviewing output of question 6, we know:
+    # (first gamma, last gamma, third)
+    return (all_gammas[0], all_gammas[5], all_gammas[2])
 
 
+# END
