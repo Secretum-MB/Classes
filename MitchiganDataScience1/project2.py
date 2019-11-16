@@ -11,7 +11,7 @@ import pandas as pd
 
 # Question 1:
 # load the Energy Indicators.xls data and clean it up
-energy = pd.read_excel('Energy Indicators.xls', skiprows=17, index_col=2, 
+energy = pd.read_excel('Energy Indicators.xls', skiprows=17, index_col=2,
                        skip_footer=38, na_values='...')
 energy = energy.drop('Unnamed: 0', 1)
 energy = energy.drop('Unnamed: 1', 1)
@@ -108,7 +108,7 @@ def answer_six():
 
 def answer_seven():
     '''Create column that is ratio of Self-Citation to Total Citations.
-    What is the maximum value for this new column, and what country has the 
+    What is the maximum value for this new column, and what country has the
     highest ratio?'''
     merged_df['Self-to-Total'] = merged_df['Self-citations'] / merged_df['Citations']
     return (merged_df['Self-to-Total'].idxmax(), merged_df['Self-to-Total'].max())
@@ -116,7 +116,7 @@ def answer_seven():
 
 def answer_eight():
     '''Create a column that estimates the population using Energy Supply and
-    Energy Supply per capita. What is the most populous country according to 
+    Energy Supply per capita. What is the most populous country according to
     this estimate?'''
     merged_df['PopEst'] = merged_df['Energy Supply'] / merged_df['Energy Supply per Capita']
     return merged_df['PopEst'].sort_values(axis=0, ascending=False).index[2]
@@ -143,7 +143,7 @@ def answer_ten():
 def answer_eleven():
     '''Use the following dictionary to group the Countries by Continent, then
     create a dataframe that displays the sample size (the number of countries
-    in each continent bin), and the sum, mean, and std deviation for the 
+    in each continent bin), and the sum, mean, and std deviation for the
     estimated population of each country.'''
     ContinentDict = {'China': 'Asia',
                      'United States': 'North America',
@@ -160,7 +160,7 @@ def answer_eleven():
                      'Iran': 'Asia',
                      'Australia': 'Australia',
                      'Brazil': 'South America'}
-            
+
     merged_df['PopEst'] = merged_df['Energy Supply'] / merged_df['Energy Supply per Capita']
     merged_df['Country'] = merged_df.index
     merged_df['Continent'] = merged_df['Country'].map(ContinentDict)
@@ -171,9 +171,9 @@ def answer_eleven():
     new_df['sum'] = new_df['PopEst'].groupby(new_df['Continent']).transform('sum')
     new_df['mean'] = new_df['PopEst'].groupby(new_df['Continent']).transform('mean')
     new_df['std'] = new_df['PopEst'].groupby(new_df['Continent']).transform('std')
- 
+
     return new_df[['size','sum','mean','std']].drop_duplicates()
-    
+
 
 def answer_twelve():
     '''Cut % Renewable into 5 bins. Group top 15 by the Continent, as well as
@@ -201,20 +201,21 @@ def answer_twelve():
     tags = ['Bottom 20%', 'Top 80%', 'Top 60%', 'Top 40%', 'Top 20%']
     merged_df['bins for Renewable'] = pd.cut(merged_df['% Renewable'], bins=5, labels=tags)
 
-    pvtdf = pd.pivot_table(merged_df, index=['Continent','bins for Renewable'], 
+    pvtdf = pd.pivot_table(merged_df, index=['Continent','bins for Renewable'],
                            values='Country', aggfunc='count')
 
     pvtdf.rename(columns={'Country':'# of Countries'}, inplace=True)
     pvtdf = pvtdf.dropna()
-    
+
     return pvtdf.squeeze()
 
+print(answer_twelve())
 
 def answer_thirteen(): # incorrect - 8 differences
     '''Convert the population Estimate sereies to a string with thousands
     seperator (using commas). Do not round the results.'''
     merged_df['PopEst-pre'] = merged_df['Energy Supply'] / merged_df['Energy Supply per Capita']
-    
+
     new_df = pd.DataFrame(merged_df['PopEst-pre'])
     new_df['formatted'] = new_df['PopEst-pre'].map('{:,.8f}'.format)
     new_df['PopEst'] = new_df[str('formatted')]

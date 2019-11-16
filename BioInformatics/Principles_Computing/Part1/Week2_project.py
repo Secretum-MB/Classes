@@ -51,102 +51,128 @@ def merge(line):
 	return result
 
 class TwentyFortyEight:
-	"""
-	Class to run the game logic.
-	"""
+    """
+    Class to run the game logic.
+    """
 
-	def __init__(self, grid_height, grid_width):
-		self.grid_height = grid_height
-		self.grid_width = grid_width
+    def __init__(self, grid_height, grid_width):
+        self.grid_height = grid_height
+        self.grid_width = grid_width
 
 		# pre-compute first tiles for each direction (help with move, later)
-		self.first_tiles = {'UP': [], 'DOWN': [], 'LEFT': [], 'RIGHT': []}
-		for row in range(self.grid_height):
-			for col in range(self.grid_width):
-				if row == 0:
-					self.first_tiles['UP'].append((row, col))
-				if row == self.grid_height - 1:
-					self.first_tiles['DOWN'].append((row, col))
-				if col == 0:
-					self.first_tiles['LEFT'].append((row, col))
-				if col == self.grid_width - 1:
-					self.first_tiles['RIGHT'].append((row, col))
-		self.reset()
+        self.first_tiles = {UP: [], DOWN: [], LEFT: [], RIGHT: []}
+        for row in range(self.grid_height):
+        	for col in range(self.grid_width):
+        		if row == 0:
+        			self.first_tiles[UP].append((row, col))
+        		if row == self.grid_height - 1:
+        			self.first_tiles[DOWN].append((row, col))
+        		if col == 0:
+        			self.first_tiles[LEFT].append((row, col))
+        		if col == self.grid_width - 1:
+        			self.first_tiles[RIGHT].append((row, col))
+        self.reset()
 
-	def reset(self):
-		"""
-		Reset the game so the grid is empty except for two
-		initial tiles.
-		"""
-		self.grid = [[0 for i in range(self.grid_width)] \
-					 for column in range(self.grid_height)]
-		self.new_tile()
-		self.new_tile()
+    def reset(self):
+        """
+        Reset the game so the grid is empty except for two
+        initial tiles.
+        """
+        self.grid = [[0 for i in range(self.grid_width)] \
+        			 for column in range(self.grid_height)]
+        self.new_tile()
+        self.new_tile()
 
-	def __str__(self):
-		"""
-		Return a string representation of the grid for debugging.
-		"""
-		result = ''
-		for row in self.grid:
-			result += str(row) + '\n'
-		return result
+    def __str__(self):
+        """
+        Return a string representation of the grid for debugging.
+        """
+        result = ''
+        for row in self.grid:
+        	result += str(row) + '\n'
+        return result
 
-	def get_grid_height(self):
-		"""
-		Get the height of the board.
-		"""
-		return self.grid_height
+    def get_grid_height(self):
+        """
+        Get the height of the board.
+        """
+        return self.grid_height
 
-	def get_grid_width(self):
-		"""
-		Get the width of the board.
-		"""
-		return self.grid_width
+    def get_grid_width(self):
+        """
+        Get the width of the board.
+        """
+        return self.grid_width
 
-	def move(self, direction):
-		"""
-		Move all tiles in the given direction and add
-		a new tile if any tiles moved.
-		"""
-		# replace with your code
-		pass
+    def move(self, direction):
+        """
+        Move all tiles in the given direction and add
+        a new tile if any tiles moved.
+        """
+        movement_occured = False
+        # for determining length of input for merge function
+        if direction in [LEFT, RIGHT]:
+            dept = self.grid_width
+        elif direction in [UP, DOWN]:
+            dept = self.grid_height
 
-	def new_tile(self):
-		"""
-		Create a new tile in a randomly selected empty square.
-		The tile should be 2 90% of the time and 4 10% of the time.
-		"""
-		# find empty squares
-		empty_squares = []
-		for row in range(len(self.grid)):
-			for col in range(len(self.grid[0])):
-				if self.grid[row][col] == 0:
-					empty_squares.append((row,col))
-		# catch game over (no more empty squares)
-		if len(empty_squares) == 0:
-			return
+        # create a list for for each row/col that is to be moved
+        for initial_tile in self.first_tiles[direction]:
+            row, col = initial_tile[0], initial_tile[1]
+            list_for_merge = [self.grid[row + (OFFSETS[direction][0] * i)] \
+                                       [col + (OFFSETS[direction][1] * i)] \
+                             for i in range(dept)]
+            # feed merged result back into game game grid
+            new_line = merge(list_for_merge)
+            for i in range(len(new_line)):
+                old_value = self.grid[row + (OFFSETS[direction][0] * i)] \
+                                     [col + (OFFSETS[direction][1] * i)]
+                new_value = new_line[i]
+                self.grid[row + (OFFSETS[direction][0] * i)] \
+                         [col + (OFFSETS[direction][1] * i)] = new_value
+                if old_value != new_value:
+                    movement_occured = True
+        # add new tile if movement occured
+        if movement_occured:
+            self.new_tile()
 
-		new_tile_pos = random.choice(empty_squares)
-		new_tile = random.choices([2, 4], weights=[.9, .1])
-		self.grid[new_tile_pos[0]][new_tile_pos[1]] = new_tile[0]
+    def new_tile(self):
+        """
+        Create a new tile in a randomly selected empty square.
+        The tile should be 2 90% of the time and 4 10% of the time.
+        """
+        # find empty squares
+        empty_squares = []
+        for row in range(len(self.grid)):
+        	for col in range(len(self.grid[0])):
+        		if self.grid[row][col] == 0:
+        			empty_squares.append((row,col))
+        # catch game over (no more empty squares)
+        if len(empty_squares) == 0:
+        	return
 
-	def set_tile(self, row, col, value):
-		"""
-		Set the tile at position row, col to have the given value.
-		"""
-		self.grid[row][col] = value
+        new_tile_pos = random.choice(empty_squares)
+        new_tile = random.choices([2, 4], weights=[.9, .1])
+        self.grid[new_tile_pos[0]][new_tile_pos[1]] = new_tile[0]
 
-	def get_tile(self, row, col):
-		"""
-		Return the value of the tile at position row, col.
-		"""
-		return self.grid[row][col]
+    def set_tile(self, row, col, value):
+        """
+        Set the tile at position row, col to have the given value.
+        """
+        self.grid[row][col] = value
+
+    def get_tile(self, row, col):
+        """
+        Return the value of the tile at position row, col.
+        """
+        return self.grid[row][col]
 
 
 #poc_2048_gui.run_gui(TwentyFortyEight(4, 4))
 
 
-a = TwentyFortyEight(4, 5)
-print(a)
-
+b = TwentyFortyEight(4, 5)
+print(b)
+b.move(DOWN)
+print()
+print(b)

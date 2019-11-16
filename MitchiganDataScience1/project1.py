@@ -81,7 +81,6 @@ def answer_six():
     b = a.groupby('STNAME')['CENSUS2010POP'].apply(lambda grp: grp.nlargest(3).sum())
     b = b.sort_values(ascending=False)
     c = list(b.index[:3])
-    return c
 
 
 def answer_seven():
